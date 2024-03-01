@@ -36,3 +36,8 @@ test = false
 name = "client"
 path = "src/bin/client.rs"
 test = false
+
+[[bin]]
+name = "swag_gen"
+path = "src/bin/swag_gen.rs"
+test = false
