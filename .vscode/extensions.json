@@ -1,16 +1,16 @@
 {
-    // See https://go.microsoft.com/fwlink/?LinkId=827846
-    // for the documentation about the extensions.json format
-    "recommendations": [
-      "rust-lang.rust-analyzer",
-      "github.copilot",
-      "m4ns0ur.base64",
-      "aaron-bond.better-comments",
-      "yzhang.markdown-all-in-one",
-      "bierner.markdown-mermaid",
-      "hristian-kohler.path-intellisense",
-      "helixquar.randomeverything",
-      "shardulm94.trailing-spaces"
-    ]
-  }
-  
+  // See https://go.microsoft.com/fwlink/?LinkId=827846
+  // for the documentation about the extensions.json format
+  "recommendations": [
+    "rust-lang.rust-analyzer",
+    "github.copilot",
+    "m4ns0ur.base64",
+    "aaron-bond.better-comments",
+    "yzhang.markdown-all-in-one",
+    "bierner.markdown-mermaid",
+    "hristian-kohler.path-intellisense",
+    "helixquar.randomeverything",
+    "shardulm94.trailing-spaces",
+    "bungcip.better-toml"
+  ]
+}
