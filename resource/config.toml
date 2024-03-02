@@ -1,0 +1,23 @@
+port = "16667"
+hostname = "http://localhost:16667"
+env = "dev"
+
+[[peers]]
+kind = "friend"
+hostname = "http://127.0.0.1:26667"
+
+[[tracing_sub]]
+kind = "console"
+name = "console"
+level = 2
+
+[[tracing_sub]]
+kind = "file"
+name = "trace.log"
+level = 1
+
+[persistence]
+host = "localhost"
+user = "JosephJoestart"
+password = ""
+database = ""

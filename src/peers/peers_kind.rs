@@ -2,9 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
 pub enum PeerKind {
-    File,
-    Console,
-    Otp,
+    Friend,
 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]

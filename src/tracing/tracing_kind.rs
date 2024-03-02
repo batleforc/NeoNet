@@ -1,4 +1,7 @@
 use serde::{Deserialize, Serialize};
+use tracing::Level;
+
+use super::level::VerboseLevel;
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
 pub enum TracingKind {
@@ -11,4 +14,5 @@ pub enum TracingKind {
 pub struct Tracing {
     pub kind: TracingKind,
     pub name: String,
+    pub level: VerboseLevel,
 }
