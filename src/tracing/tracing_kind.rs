@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 pub enum TracingKind {
     File,
     Console,
-    Otp,
+    Otel,
 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
