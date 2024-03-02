@@ -19,6 +19,7 @@ impl Peer {
             true => self.hostname.replace("https://", ""),
             false => self.hostname.replace("http://", ""),
         }
+        .replace("/", "")
     }
     pub fn is_https(&self) -> bool {
         self.hostname.starts_with("https://")
