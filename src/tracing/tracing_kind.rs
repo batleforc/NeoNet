@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use tracing::Level;
 
 use super::level::VerboseLevel;
 
