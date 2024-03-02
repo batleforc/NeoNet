@@ -15,4 +15,16 @@ pub struct Config {
     pub env: String,
     pub peers: Vec<Peer>,
     pub tracing_sub: Vec<Peer>,
+    pub persistence: PersistenceConfig,
+}
+
+#[derive(Deserialize, Serialize, Clone)]
+pub struct PersistenceConfig {
+    pub host: String,
+    pub port: Option<u16>,
+    pub user: String,
+    pub password: String,
+    pub database: String,
+    pub tls: Option<bool>,
+    pub tls_insecure: Option<bool>,
 }
