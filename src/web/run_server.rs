@@ -19,7 +19,7 @@ pub async fn run_server() -> Option<Server> {
         }
     };
     println!("Starting server");
-    match HttpServer::new(move || {
+    let serve = HttpServer::new(move || {
         let cors = Cors::default()
             .allow_any_header()
             .allow_any_method()
@@ -31,9 +31,8 @@ pub async fn run_server() -> Option<Server> {
             .service(swagger_ui)
             .service(index::hello)
             .wrap(TracingLogger::default())
-    })
-    .bind(("0.0.0.0", port))
-    {
+    });
+    match serve.bind(("0.0.0.0", port)) {
         Ok(serv) => {
             // trace starting server
             Some(serv.run())

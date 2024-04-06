@@ -58,7 +58,7 @@ fn parse_config_from_file(path_buf: PathBuf, config_file_name: String) -> Config
     let config_file = path_buf.into_os_string().into_string().unwrap();
     let binding = read_to_string(config_file).unwrap();
     let config_content = binding.as_str();
-    match config_file_name.split(".").last() {
+    match config_file_name.split('.').last() {
         Some("yaml" | "yml") => serde_yaml::from_str(config_content).unwrap(),
         Some("toml") => toml::from_str(config_content).unwrap(),
         Some("json") => serde_json::from_str(config_content).unwrap(),

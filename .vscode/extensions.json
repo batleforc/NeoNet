@@ -4,13 +4,17 @@
   "recommendations": [
     "rust-lang.rust-analyzer",
     "github.copilot",
-    "m4ns0ur.base64",
+    "mitchdenny.ecdc",
     "aaron-bond.better-comments",
-    "yzhang.markdown-all-in-one",
     "bierner.markdown-mermaid",
     "hristian-kohler.path-intellisense",
     "helixquar.randomeverything",
     "shardulm94.trailing-spaces",
-    "bungcip.better-toml"
+    "tamasfe.even-better-toml",
+    "edwinkofler.vscode-hyperupcall-pack-markdown",
+    "proxzima.sweetdracula",
+    "wdhongtw.gpg-indicator",
+    "vadimcn.vscode-lldb",
+    "wakatime.vscode-wakatime"
   ]
 }
