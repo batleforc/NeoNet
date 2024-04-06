@@ -11,8 +11,8 @@ use super::apidocs::ApiDoc;
 pub async fn run_server() -> Option<Server> {
     let mut openapi = ApiDoc::openapi();
     openapi.info.version = env!("CARGO_PKG_VERSION").to_string();
-    let port: u16 = match env!("PORT").parse() {
-        Ok(port) => port,
+    let port: u16 = match std::env::var("PORT") {
+        Ok(port) => port.parse().unwrap(),
         Err(err) => {
             println!("Couldn't parse port, starting with 16667 : {:?}", err);
             16667
