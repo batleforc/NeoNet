@@ -23,11 +23,14 @@ toml = "0.8.10"
 tracing = "0.1.40"
 tracing-actix-web = "0.7.9"
 tracing-subscriber = { version = "0.3", features = ["registry", "env-filter"] }
-utoipa = {version="4",features= ["actix_extras","uuid"] }
-utoipa-swagger-ui = {version="6.0.0", features=["actix-web"]}
+utoipa = { version = "4", features = ["actix_extras", "uuid"] }
+utoipa-swagger-ui = { version = "6.0.0", features = ["actix-web"] }
 uuid = "1.7.0"
-
-elliptic-curve = "0.13.8"
+secp256k1-zkp = { version = "0.10.1", features = [
+  "serde",
+  "global-context",
+  "rand-std",
+] }
 
 # Code that will init a peer
 [[bin]]
