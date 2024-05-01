@@ -15,8 +15,6 @@ components:
     container:
       image: harbor.weebo.fr/batleforc/che-rust:latest
       memoryLimit: 8Gi
-      command: ["tail"]
-      args: ["-f", "/dev/null"]
       mountSources: true
       endpoints:
         - name: 16667-http
@@ -29,6 +27,35 @@ components:
           value: "dev-che"
         - name: "PORT"
           value: "16667"
+        - name: MONGODB_URL
+          value: mongodb://bandersnatch:elpsycongroo@localhost:27017/neonet
+  - name: mongo
+    container:
+      image: mongo:latest
+      memoryLimit: 2Gi
+      mountSources: false
+      endpoints:
+        - name: 27017-tcp
+          targetPort: 27017
+          exposure: public
+          protocol: tcp
+      env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          value: bandersnatch
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          value: elpsycongroo
+        - name: CONFIG_MONGODB_URL
+          value: mongodb://bandersnatch:elpsycongroo@localhost:27017/
+        - name: CONFIG_BASICAUTH
+          value: "false"
+        - name: MONGO_INITDB_DATABASE
+          value: neonet
+      volumeMounts:
+        - name: mongo-volume
+          path: /data/db
+  - name: mongo-volume
+    volume:
+      size: 2Gi
 
 commands:
   - id: build

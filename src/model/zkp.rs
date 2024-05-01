@@ -57,12 +57,10 @@ impl Zkp {
                     let _ = write!(output, "{b:02x}");
                     output
                 });
-
         let mut challenge_data = Vec::new();
         challenge_data.extend_from_slice(group_commitment.as_bytes());
         challenge_data.extend_from_slice(commitment.as_bytes());
         challenge_data.extend_from_slice(random_value.as_bytes());
-
         let challenge = Zkp::sha256(&challenge_data);
         let response = match Keypair::from_seckey_str(&self.secp, &random_value) {
             Ok(keypair) => keypair.secret_key().display_secret(),
@@ -114,7 +112,7 @@ mod tests {
             zkp.generate_membership_proof(&public_key_user_a, group_commitment.clone());
         let user_b_proof =
             zkp.generate_membership_proof(&public_key_user_b, group_commitment2.clone());
-
+        println!("{}", user_a_proof.challenge);
         let is_valid_user_a =
             zkp.verify_membership_proof(user_a_proof, group_commitment.clone(), &public_key_user_a);
         let is_valid_user_b =

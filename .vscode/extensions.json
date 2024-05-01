@@ -15,6 +15,7 @@
     "proxzima.sweetdracula",
     "wdhongtw.gpg-indicator",
     "vadimcn.vscode-lldb",
-    "wakatime.vscode-wakatime"
+    "wakatime.vscode-wakatime",
+    "oderwat.indent-rainbow"
   ]
 }
