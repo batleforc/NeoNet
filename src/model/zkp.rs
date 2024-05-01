@@ -2,9 +2,8 @@ use secp256k1_zkp::{generate_keypair, All, Keypair, PublicKey, Secp256k1, Secret
 use sha2::{Digest, Sha256};
 use std::fmt::Write;
 
-#[allow(dead_code)]
 #[derive(Debug)]
-struct GroupMembershipProof {
+pub struct GroupMembershipProof {
     pub commitment: String,
     pub challenge: String,
     pub response: String,
@@ -12,7 +11,7 @@ struct GroupMembershipProof {
 
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
-struct Zkp {
+pub struct Zkp {
     pub server_commitment: String,
     mystery: String,
     secp: Secp256k1<All>,
