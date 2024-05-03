@@ -16,6 +16,7 @@
     "wdhongtw.gpg-indicator",
     "vadimcn.vscode-lldb",
     "wakatime.vscode-wakatime",
-    "oderwat.indent-rainbow"
+    "oderwat.indent-rainbow",
+    "mongodb.mongodb-vscode",
   ]
 }

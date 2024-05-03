@@ -32,6 +32,9 @@ secp256k1-zkp = { version = "0.10.1", features = [
   "global-context",
   "rand-std",
 ] }
+async-trait = "0.1.80"
+mongodb = "2.8.2"
+tokio = "1.37.0"
 
 # Code that will init a peer
 [[bin]]
