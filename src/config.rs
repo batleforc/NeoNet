@@ -27,6 +27,10 @@ pub struct Config {
     pub persistence: PersistenceConfig,
 }
 
+// Persistence configuration, it will be used to connect to the database
+// In the case of a MongoDB database, just add the database and host fields
+// ATM, only MongoDB is supported
+// In the future, we can add more databases
 #[derive(Deserialize, Serialize, Clone)]
 pub struct PersistenceConfig {
     pub host: String,
