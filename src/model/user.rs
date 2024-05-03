@@ -23,6 +23,7 @@ pub struct User {
 impl Entity for User {}
 
 impl User {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: String,
         role: Role,
@@ -54,9 +55,6 @@ impl User {
         self.password = bcrypt::hash(password, bcrypt::DEFAULT_COST).unwrap();
     }
     pub fn check_password(&self, password: &str) -> bool {
-        match bcrypt::verify(password, &self.password) {
-            Ok(result) => result,
-            Err(_) => false,
-        }
+        bcrypt::verify(password, &self.password).unwrap_or(false)
     }
 }

@@ -9,23 +9,12 @@ use crate::{
     model::{role::Role, user::User},
 };
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct SearchUser {
     pub username: Option<String>,
     pub role: Option<Vec<Role>>,
     pub enabled: Option<bool>,
     pub auth_type: Option<Vec<String>>,
-}
-
-impl Default for SearchUser {
-    fn default() -> Self {
-        SearchUser {
-            username: None,
-            role: None,
-            enabled: None,
-            auth_type: None,
-        }
-    }
 }
 
 impl SearchEntity for SearchUser {}
@@ -38,20 +27,10 @@ impl SearchUser {
             return None;
         }
         if let Some(username) = &self.username {
-            if username.starts_with("/") && username.ends_with("/") {
+            if username.starts_with('/') || username.ends_with('/') {
                 search.insert(
                     "username",
-                    doc! { "$regex": username.replace("/", ""), "$options": "i" },
-                );
-            } else if username.starts_with("/") {
-                search.insert(
-                    "username",
-                    doc! { "$regex": username.replace("/", ""), "$options": "i" },
-                );
-            } else if username.ends_with("/") {
-                search.insert(
-                    "username",
-                    doc! { "$regex": username.replace("/", ""), "$options": "i" },
+                    doc! { "$regex": username.replace('/', ""), "$options": "i" },
                 );
             } else {
                 search.insert("username", username);

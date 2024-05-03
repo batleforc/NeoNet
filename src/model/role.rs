@@ -8,18 +8,6 @@ pub enum Role {
     User,
 }
 
-impl Role {
-    pub fn from_str(role: &str) -> Option<Role> {
-        match role {
-            "Owner" => Some(Role::Owner),
-            "Admin" => Some(Role::Admin),
-            "Moderator" => Some(Role::Moderator),
-            "User" => Some(Role::User),
-            _ => None,
-        }
-    }
-}
-
 impl ToString for Role {
     fn to_string(&self) -> String {
         match self {
