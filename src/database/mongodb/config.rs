@@ -19,6 +19,7 @@ impl MongoDbConfig {
             client: None,
         }
     }
+    #[tracing::instrument(level = "trace")]
     pub async fn init_db(&mut self) -> Result<mongodb::Client, RepoInitError> {
         let client = mongodb::Client::with_uri_str(&self.uri)
             .await
@@ -26,6 +27,7 @@ impl MongoDbConfig {
         self.client = Some(client.clone());
         Ok(client.clone())
     }
+    #[tracing::instrument(level = "debug")]
     pub async fn get_client(&mut self) -> Result<mongodb::Client, RepoInitError> {
         if let Some(client) = &self.client {
             return Ok(client.clone());
@@ -33,10 +35,12 @@ impl MongoDbConfig {
             return self.init_db().await;
         }
     }
+    #[tracing::instrument(level = "debug")]
     pub async fn get_database(&mut self) -> Result<mongodb::Database, RepoInitError> {
         let client = self.get_client().await?;
         Ok(client.database(&self.db_name))
     }
+    #[tracing::instrument(level = "debug")]
     pub async fn health_check(&mut self) -> Result<(), RepoInitError> {
         let database = self.get_database().await?;
         database
@@ -53,7 +57,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_mongodb_config() {
-        let uri = "mongodb://localhost:27017".to_string();
+        let uri = "mongodb://root:root@localhost:27017".to_string();
         let db_name = "test_db".to_string();
         let mut config = MongoDbConfig::new(uri.clone(), db_name.clone());
         assert_eq!(config.uri, uri);

@@ -17,7 +17,7 @@ name = "trace.log"
 level = 1
 
 [persistence]
-host = "localhost"
+host = "mongodb://root:root@localhost:27017"
 user = "JosephJoestart"
 password = ""
-database = ""
+database = "testing"

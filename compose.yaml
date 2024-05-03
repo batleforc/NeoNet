@@ -1,6 +1,6 @@
 services:
   mongo:
-    image: mongo:4.4
+    image: mongo
     container_name: mongo
     environment:
       MONGO_INITDB_ROOT_USERNAME: root

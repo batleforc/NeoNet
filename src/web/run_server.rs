@@ -1,23 +1,25 @@
+use crate::database::repo::Repository;
 use actix_cors::Cors;
 use actix_web::{dev::Server, App, HttpServer};
 use tracing_actix_web::TracingLogger;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
-use crate::web::index;
+use crate::{
+    config::parse_local_config,
+    database::mongodb::{config::MongoDbConfig, repo_user},
+    web::index,
+};
 
 use super::apidocs::ApiDoc;
 
 pub async fn run_server() -> Option<Server> {
     let mut openapi = ApiDoc::openapi();
     openapi.info.version = env!("CARGO_PKG_VERSION").to_string();
-    let port: u16 = match std::env::var("PORT") {
-        Ok(port) => port.parse().unwrap(),
-        Err(err) => {
-            println!("Couldn't parse port, starting with 16667 : {:?}", err);
-            16667
-        }
-    };
+    let config = parse_local_config("config.toml".to_string());
+    let mongo_db_config = MongoDbConfig::new(config.persistence.host, config.persistence.database);
+    let repo_user = repo_user::UserMongoRepo::new(&mongo_db_config).unwrap();
+    repo_user.init().await.unwrap();
     println!("Starting server");
     let serve = HttpServer::new(move || {
         let cors = Cors::default()
@@ -32,7 +34,7 @@ pub async fn run_server() -> Option<Server> {
             .service(index::hello)
             .wrap(TracingLogger::default())
     });
-    match serve.bind(("0.0.0.0", port)) {
+    match serve.bind(("0.0.0.0", config.port)) {
         Ok(serv) => {
             // trace starting server
             Some(serv.run())
