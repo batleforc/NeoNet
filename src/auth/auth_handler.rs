@@ -7,7 +7,7 @@ use crate::{
 
 use super::auth_handler_enum::{
     CallbackRequestError, LoginRequestError, LoginRequestRetun, LogoutRequestError,
-    RefreshRequestError, ValidateRequestError,
+    RefreshRequestError, RegisterRequestError, ValidateRequestError,
 };
 
 #[async_trait]
@@ -17,6 +17,15 @@ where
 {
     // The name of the authentication handler
     fn get_name(&self) -> String;
+
+    // The version of the authentication handler
+    fn get_version(&self) -> String;
+
+    // The description of the authentication handler
+    fn get_description(&self) -> String;
+
+    // If the authentication handler is enabled
+    fn is_enabled(&self) -> bool;
 
     // The login function that will be called when the user tries to login
     // It username and password can be empty strings
@@ -34,6 +43,11 @@ where
     // The path used will be like /api/auth/callback/{name of the handler}
     // This function should return the token if the authentication is successful
     async fn callback(&self, database: &R, code: String) -> Result<String, CallbackRequestError>;
+
+    // The register function that will be called when the user tries to register
+    // The function should return whether the registration was successful or not
+    // This function could be called by the callback function if the user is not found
+    async fn register(&self, database: &R, user: User) -> Result<(), RegisterRequestError>;
 
     // The logout function that will be called when the user tries to logout
     async fn logout(&self, database: &R, token: String) -> Result<(), LogoutRequestError>;

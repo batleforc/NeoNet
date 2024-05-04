@@ -80,3 +80,9 @@ impl Display for RefreshRequestError {
         }
     }
 }
+
+#[derive(Debug)]
+pub enum RegisterRequestError {
+    InvalidData(String),
+    Unknown(String),
+}
