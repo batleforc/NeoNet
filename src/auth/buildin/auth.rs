@@ -15,6 +15,7 @@ use crate::{
 #[derive(Debug, Clone)]
 pub struct BuildInAuthHandler {
     pub enabled: bool,
+    pub require_zkp: bool,
 }
 
 #[async_trait]
@@ -33,6 +34,10 @@ impl AuthHandler<dyn Repository<User, SearchUser, dyn PersistenceConfig>> for Bu
 
     fn is_enabled(&self) -> bool {
         self.enabled
+    }
+
+    fn require_zkp(&self) -> bool {
+        self.require_zkp
     }
 
     async fn login(

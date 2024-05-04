@@ -27,6 +27,9 @@ where
     // If the authentication handler is enabled
     fn is_enabled(&self) -> bool;
 
+    // If the authentication handler should have a ZKP aknowledgement before registering
+    fn require_zkp(&self) -> bool;
+
     // The login function that will be called when the user tries to login
     // It username and password can be empty strings
     // The function has the responsibility to validate the username and password
