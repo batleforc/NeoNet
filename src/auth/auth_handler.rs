@@ -47,6 +47,7 @@ where
     // The register function that will be called when the user tries to register
     // The function should return whether the registration was successful or not
     // This function could be called by the callback function if the user is not found
+    // ! The username should be unique and unchangeable
     async fn register(&self, database: &R, user: User) -> Result<(), RegisterRequestError>;
 
     // The logout function that will be called when the user tries to logout
