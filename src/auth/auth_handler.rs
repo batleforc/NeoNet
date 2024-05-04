@@ -13,7 +13,7 @@ use super::auth_handler_enum::{
 #[async_trait]
 pub trait AuthHandler<R>
 where
-    R: Repository<User, SearchUser, dyn PersistenceConfig>,
+    R: Repository<User, SearchUser, dyn PersistenceConfig> + ?Sized,
 {
     // The name of the authentication handler
     fn get_name(&self) -> String;
