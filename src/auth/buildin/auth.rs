@@ -41,7 +41,7 @@ impl AuthHandler<dyn Repository<User, SearchUser, dyn PersistenceConfig>> for Bu
         _username: String,
         _password: String,
     ) -> Result<LoginRequestRetun, LoginRequestError> {
-        Err(LoginRequestError::Unknown("Not implemented".to_string()))
+        todo!("Implement login");
     }
 
     async fn callback(
@@ -49,7 +49,7 @@ impl AuthHandler<dyn Repository<User, SearchUser, dyn PersistenceConfig>> for Bu
         _database: &dyn Repository<User, SearchUser, dyn PersistenceConfig>,
         _code: String,
     ) -> Result<String, CallbackRequestError> {
-        Err(CallbackRequestError::Unknown("Not implemented".to_string()))
+        todo!("Implement callback");
     }
 
     async fn register(
@@ -57,7 +57,7 @@ impl AuthHandler<dyn Repository<User, SearchUser, dyn PersistenceConfig>> for Bu
         _database: &dyn Repository<User, SearchUser, dyn PersistenceConfig>,
         _user: User,
     ) -> Result<(), RegisterRequestError> {
-        Err(RegisterRequestError::Unknown("Not implemented".to_string()))
+        todo!("Implement register");
     }
 
     async fn logout(
@@ -65,7 +65,7 @@ impl AuthHandler<dyn Repository<User, SearchUser, dyn PersistenceConfig>> for Bu
         _database: &dyn Repository<User, SearchUser, dyn PersistenceConfig>,
         _token: String,
     ) -> Result<(), LogoutRequestError> {
-        Err(LogoutRequestError::Unknown("Not implemented".to_string()))
+        todo!("Implement logout");
     }
 
     async fn validate(
@@ -73,7 +73,7 @@ impl AuthHandler<dyn Repository<User, SearchUser, dyn PersistenceConfig>> for Bu
         _database: &dyn Repository<User, SearchUser, dyn PersistenceConfig>,
         _token: String,
     ) -> Result<User, ValidateRequestError> {
-        Err(ValidateRequestError::Unknown("Not implemented".to_string()))
+        todo!("Implement validate");
     }
 
     async fn refresh(
@@ -81,6 +81,6 @@ impl AuthHandler<dyn Repository<User, SearchUser, dyn PersistenceConfig>> for Bu
         _database: &dyn Repository<User, SearchUser, dyn PersistenceConfig>,
         _token: String,
     ) -> Result<String, RefreshRequestError> {
-        Err(RefreshRequestError::Unknown("Not implemented".to_string()))
+        todo!("Implement refresh");
     }
 }
