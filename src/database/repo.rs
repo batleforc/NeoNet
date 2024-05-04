@@ -11,8 +11,8 @@ use super::{
 pub trait Repository<T, A, P>
 where
     T: Entity,
-    A: SearchEntity,
-    P: PersistenceConfig,
+    A: SearchEntity + ?Sized,
+    P: PersistenceConfig + ?Sized,
 {
     /// A function responsible for the creation of the Repository
     fn new(config: &P) -> Result<Self, String>

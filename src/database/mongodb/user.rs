@@ -5,19 +5,9 @@ use mongodb::bson::{doc, oid::ObjectId, Document};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    database::SearchEntity,
+    database::user::SearchUser,
     model::{role::Role, user::User},
 };
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
-pub struct SearchUser {
-    pub username: Option<String>,
-    pub role: Option<Vec<Role>>,
-    pub enabled: Option<bool>,
-    pub auth_type: Option<Vec<String>>,
-}
-
-impl SearchEntity for SearchUser {}
 
 impl SearchUser {
     #[tracing::instrument(level = "trace")]

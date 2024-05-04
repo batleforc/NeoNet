@@ -1,8 +1,6 @@
-use super::{
-    config::MongoDbConfig,
-    user::{SearchUser, UserMongo},
-};
+use super::{config::MongoDbConfig, user::UserMongo};
 use crate::database::mongodb::repo_user::bson::doc;
+use crate::database::user::SearchUser;
 use crate::{database::repo::Repository, model::user::User};
 use async_trait::async_trait;
 use futures_util::StreamExt;
