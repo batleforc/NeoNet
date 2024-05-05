@@ -1,19 +1,20 @@
 use async_trait::async_trait;
 
 use crate::{
+    config::AuthConfig,
     database::{repo::Repository, user::SearchUser, PersistenceConfig},
     model::user::User,
 };
 
 use super::auth_handler_enum::{
-    CallbackRequestError, LoginRequestError, LoginRequestRetun, LogoutRequestError,
-    RefreshRequestError, RegisterRequestError, ValidateRequestError,
+    CallbackRequestError, ConfigValidateError, LoginRequestError, LoginRequestRetun,
+    LogoutRequestError, RefreshRequestError, RegisterRequestError, ValidateRequestError,
 };
 
 #[async_trait]
 pub trait AuthHandler<R>
 where
-    R: Repository<User, SearchUser, dyn PersistenceConfig> + ?Sized,
+    R: Repository<User, SearchUser, dyn PersistenceConfig> + ?Sized + Sync,
 {
     // The name of the authentication handler
     fn get_name(&self) -> String;
@@ -24,16 +25,25 @@ where
     // The description of the authentication handler
     fn get_description(&self) -> String;
 
-    // If the authentication handler is enabled
-    fn is_enabled(&self) -> bool;
+    // Return the kind of authentication handler
+    fn get_kind(&self) -> String;
 
     // If the authentication handler should have a ZKP aknowledgement before registering
-    fn require_zkp(&self) -> bool;
+    fn register_require_zkp(&self) -> bool;
+
+    // The init config function that will be called at the start of the service to make sure that the configuration is correct and instanciate the handler
+    // This function should return an error if the configuration is not correct
+    // This function should return Ok(()) if the configuration is correct
+    async fn init_config(
+        &mut self,
+        config: AuthConfig,
+        app_name: String,
+    ) -> Result<(), ConfigValidateError>;
 
     // The login function that will be called when the user tries to login
     // It username and password can be empty strings
     // The function has the responsibility to validate the username and password
-    // and return a token if the validation is successful
+    // and return a refresh token if the validation is successful
     async fn login(
         &self,
         database: &R,
@@ -61,5 +71,6 @@ where
     async fn validate(&self, database: &R, token: String) -> Result<User, ValidateRequestError>;
 
     // The refresh function that will be called when the user tries to refresh the token
+    // The function should return a new access token if the refresh is successful
     async fn refresh(&self, database: &R, token: String) -> Result<String, RefreshRequestError>;
 }

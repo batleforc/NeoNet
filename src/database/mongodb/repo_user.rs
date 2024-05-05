@@ -169,6 +169,7 @@ mod tests {
             None,
             Utc::now(),
             Utc::now(),
+            Vec::new(),
         );
         let result = repo.create(user.clone()).await.unwrap();
         assert!(result.id == user.id);
@@ -197,6 +198,7 @@ mod tests {
             None,
             Utc::now(),
             Utc::now(),
+            Vec::new(),
         );
         repo.create(user.clone()).await.unwrap();
         let search = SearchUser {
@@ -229,6 +231,7 @@ mod tests {
             None,
             Utc::now(),
             Utc::now(),
+            Vec::new(),
         );
         repo.create(user.clone()).await.unwrap();
         let search = SearchUser {

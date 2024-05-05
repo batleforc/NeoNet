@@ -18,6 +18,7 @@ pub struct User {
     pub auth_type: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+    pub token: Vec<String>,
 }
 
 impl Entity for User {}
@@ -36,6 +37,7 @@ impl User {
         auth_type: Option<String>,
         created_at: DateTime<Utc>,
         updated_at: DateTime<Utc>,
+        token: Vec<String>,
     ) -> Self {
         User {
             id,
@@ -49,6 +51,7 @@ impl User {
             auth_type,
             created_at,
             updated_at,
+            token,
         }
     }
     pub fn set_password(&mut self, password: &str) {

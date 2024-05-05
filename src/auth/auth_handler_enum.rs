@@ -1,6 +1,21 @@
 use std::fmt::Display;
 
 #[derive(Debug)]
+pub enum ConfigValidateError {
+    InvalidData(String),
+    Unknown(String),
+}
+
+impl Display for ConfigValidateError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ConfigValidateError::InvalidData(msg) => write!(f, "InvalidData: {}", msg),
+            ConfigValidateError::Unknown(msg) => write!(f, "Unknown: {}", msg),
+        }
+    }
+}
+
+#[derive(Debug)]
 pub enum LoginRequestRetun {
     JWT(String),
     REDIRECT(String),
@@ -9,6 +24,7 @@ pub enum LoginRequestRetun {
 #[derive(Debug)]
 pub enum LoginRequestError {
     InvalidData(String),
+    Unauthorized(String),
     Unknown(String),
 }
 
@@ -17,6 +33,7 @@ impl Display for LoginRequestError {
         match self {
             LoginRequestError::InvalidData(msg) => write!(f, "InvalidData: {}", msg),
             LoginRequestError::Unknown(msg) => write!(f, "Unknown: {}", msg),
+            LoginRequestError::Unauthorized(msg) => write!(f, "Unauthorized: {}", msg),
         }
     }
 }
@@ -25,6 +42,7 @@ impl Display for LoginRequestError {
 pub enum CallbackRequestError {
     InvalidData(String),
     Unknown(String),
+    DoesNotSupport,
 }
 
 impl Display for CallbackRequestError {
@@ -32,6 +50,7 @@ impl Display for CallbackRequestError {
         match self {
             CallbackRequestError::InvalidData(msg) => write!(f, "InvalidData: {}", msg),
             CallbackRequestError::Unknown(msg) => write!(f, "Unknown: {}", msg),
+            CallbackRequestError::DoesNotSupport => write!(f, "DoesNotSupport"),
         }
     }
 }
@@ -85,4 +104,15 @@ impl Display for RefreshRequestError {
 pub enum RegisterRequestError {
     InvalidData(String),
     Unknown(String),
+    DoesNotSupport,
+}
+
+impl Display for RegisterRequestError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            RegisterRequestError::InvalidData(msg) => write!(f, "InvalidData: {}", msg),
+            RegisterRequestError::Unknown(msg) => write!(f, "Unknown: {}", msg),
+            RegisterRequestError::DoesNotSupport => write!(f, "DoesNotSupport"),
+        }
+    }
 }

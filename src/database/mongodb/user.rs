@@ -38,6 +38,9 @@ impl SearchUser {
         if let Some(auth_type) = &self.auth_type {
             search.insert("auth_type", doc! { "$in": auth_type });
         }
+        if let Some(token) = &self.token {
+            search.insert("token", doc! { "$elemMatch": { "$eq": token } });
+        }
         Some(search)
     }
 }
@@ -55,6 +58,7 @@ pub struct UserMongo {
     pub auth_type: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+    pub token: Vec<String>,
 }
 
 impl UserMongo {
@@ -77,6 +81,7 @@ impl From<User> for UserMongo {
             auth_type: user.auth_type,
             created_at: user.created_at,
             updated_at: user.updated_at,
+            token: user.token,
         }
     }
 }
@@ -97,6 +102,7 @@ impl TryInto<User> for UserMongo {
             auth_type: self.auth_type,
             created_at: self.created_at,
             updated_at: self.updated_at,
+            token: self.token,
         })
     }
 }

@@ -1,27 +1,39 @@
-use async_trait::async_trait;
-
 use crate::{
     auth::{
         auth_handler::AuthHandler,
         auth_handler_enum::{
-            CallbackRequestError, LoginRequestError, LoginRequestRetun, LogoutRequestError,
-            RefreshRequestError, RegisterRequestError, ValidateRequestError,
+            CallbackRequestError, ConfigValidateError, LoginRequestError, LoginRequestRetun,
+            LogoutRequestError, RefreshRequestError, RegisterRequestError, ValidateRequestError,
         },
     },
+    config::AuthConfig,
     database::{repo::Repository, user::SearchUser, PersistenceConfig},
-    model::user::User,
+    model::{token_claim::TokenConfig, user::User},
 };
+use async_trait::async_trait;
+use tracing::{error, info};
 
+use super::{create_refresh_token::create_refresh_token, login};
+
+// The authentication handler that uses a build-in user database
+// The handler will use the User model to store the user information
+// The handler will use the TokenConfig to generate the token
+// The TokenConfig requires the access_token_sign, refresh_token_sign, access_token_exp, and refresh_token_exp
+// The _exp fields are the expiration time in seconds
 #[derive(Debug, Clone)]
 pub struct BuildInAuthHandler {
-    pub enabled: bool,
     pub require_zkp: bool,
+    pub token_config: TokenConfig,
+    pub description: String,
+    pub app_name: String,
 }
 
 #[async_trait]
-impl AuthHandler<dyn Repository<User, SearchUser, dyn PersistenceConfig>> for BuildInAuthHandler {
+impl AuthHandler<dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync>
+    for BuildInAuthHandler
+{
     fn get_name(&self) -> String {
-        "BuildInAuthHandler".to_string()
+        "buildin".to_string()
     }
 
     fn get_version(&self) -> String {
@@ -29,61 +41,211 @@ impl AuthHandler<dyn Repository<User, SearchUser, dyn PersistenceConfig>> for Bu
     }
 
     fn get_description(&self) -> String {
-        "Authentication handler that uses a build-in user database".to_string()
+        self.description.clone()
     }
 
-    fn is_enabled(&self) -> bool {
-        self.enabled
-    }
-
-    fn require_zkp(&self) -> bool {
+    fn register_require_zkp(&self) -> bool {
         self.require_zkp
     }
 
+    fn get_kind(&self) -> String {
+        "build-in".to_string()
+    }
+
+    #[tracing::instrument(level = "debug", skip(config))]
+    async fn init_config(
+        &mut self,
+        config: AuthConfig,
+        app_name: String,
+    ) -> Result<(), ConfigValidateError> {
+        if !config.enabled {
+            error!("The authentication handler is not enabled and should not be instanciated");
+            return Err(ConfigValidateError::InvalidData(
+                "The authentication handler is not enabled and should not be instanciated"
+                    .to_string(),
+            ));
+        }
+        if config.kind != self.get_kind() {
+            error!("The authentication handler kind is not build-in");
+            return Err(ConfigValidateError::InvalidData(
+                "The authentication handler kind is not build-in".to_string(),
+            ));
+        }
+        if config.version != "" && config.version != self.get_version() {
+            error!("The authentication handler version does not match");
+            return Err(ConfigValidateError::InvalidData(
+                "The authentication handler version does not match".to_string(),
+            ));
+        }
+        let mut token_config = TokenConfig::default();
+
+        if let Some(refresh_token_sign) = config.extra_fields.get("refresh_token_sign") {
+            token_config.refresh_token_sign = refresh_token_sign.to_string();
+        } else {
+            error!("The refresh_token_sign is missing from the configuration");
+            return Err(ConfigValidateError::InvalidData(
+                "The refresh_token_sign is missing from the configuration".to_string(),
+            ));
+        }
+
+        if let Some(access_token_sign) = config.extra_fields.get("access_token_sign") {
+            token_config.access_token_sign = access_token_sign.to_string();
+        } else {
+            error!("The access_token_sign is missing from the configuration");
+            return Err(ConfigValidateError::InvalidData(
+                "The access_token_sign is missing from the configuration".to_string(),
+            ));
+        }
+
+        if let Some(refresh_token_expire) = config.extra_fields.get("refresh_token_expire") {
+            match refresh_token_expire.parse::<usize>() {
+                Ok(duration) => {
+                    if duration < 60 {
+                        error!(
+                            "The refresh_token_expire is too short, keep it at least 60 seconds"
+                        );
+                        return Err(ConfigValidateError::InvalidData(
+                            "The refresh_token_expire is too short".to_string(),
+                        ));
+                    }
+                    token_config.refresh_token_exp = duration
+                }
+                Err(err) => {
+                    error!("The refresh_token_expire is not a number: {}", err);
+                    return Err(ConfigValidateError::InvalidData(
+                        "The refresh_token_expire is not a number".to_string(),
+                    ));
+                }
+            }
+        } else {
+            error!("The refresh_token_expire is missing from the configuration");
+            return Err(ConfigValidateError::InvalidData(
+                "The refresh_token_expire is missing from the configuration".to_string(),
+            ));
+        }
+
+        if let Some(access_token_expire) = config.extra_fields.get("access_token_expire") {
+            match access_token_expire.parse::<usize>() {
+                Ok(duration) => {
+                    if duration < 60 {
+                        error!("The access_token_expire is too short, keep it at least 60 seconds");
+                        return Err(ConfigValidateError::InvalidData(
+                            "The access_token_expire is too short".to_string(),
+                        ));
+                    }
+                    token_config.access_token_exp = duration
+                }
+                Err(err) => {
+                    error!("The access_token_expire is not a number: {}", err);
+                    return Err(ConfigValidateError::InvalidData(
+                        "The access_token_expire is not a number".to_string(),
+                    ));
+                }
+            }
+        } else {
+            error!("The access_token_expire is missing from the configuration");
+            return Err(ConfigValidateError::InvalidData(
+                "The access_token_expire is missing from the configuration".to_string(),
+            ));
+        }
+
+        if token_config.access_token_exp > token_config.refresh_token_exp {
+            error!("The access_token_expire should be lower than the refresh_token_expire");
+            return Err(ConfigValidateError::InvalidData(
+                "The access_token_expire should be lower than the refresh_token_expire".to_string(),
+            ));
+        }
+
+        self.token_config = token_config;
+        // The name of the authentication handler will not be checked
+        self.require_zkp = config.require_zkp;
+        self.description = config.description.clone();
+        self.app_name = app_name;
+
+        Ok(())
+    }
+
+    #[tracing::instrument(skip(database, password), level = "debug")]
     async fn login(
         &self,
-        _database: &dyn Repository<User, SearchUser, dyn PersistenceConfig>,
-        _username: String,
-        _password: String,
+        database: &(dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync),
+        username: String,
+        password: String,
     ) -> Result<LoginRequestRetun, LoginRequestError> {
-        todo!("Implement login");
+        if username.is_empty() || password.is_empty() {
+            return Err(LoginRequestError::InvalidData(
+                "Username and password cannot be empty".to_string(),
+            ));
+        }
+        match login::login_handler(database, username, password, self.get_name()).await {
+            Ok(user) => {
+                // Generate refresh JWT
+                // Save refresh JWT in user
+                // Return JWT
+                match create_refresh_token(
+                    database,
+                    &mut user.clone(),
+                    self.token_config.clone(),
+                    self.app_name.clone(),
+                )
+                .await
+                {
+                    Ok(token) => {
+                        info!("User logged in: {}", user.username);
+                        Ok(LoginRequestRetun::JWT(token))
+                    }
+                    Err(err) => {
+                        error!("Error creating refresh token: {}", err.to_string());
+                        Err(LoginRequestError::Unknown(
+                            "Error creating refresh token".to_string(),
+                        ))
+                    }
+                }
+            }
+            Err(err) => Err(err),
+        }
     }
 
+    #[tracing::instrument(skip(_database), level = "debug")]
     async fn callback(
         &self,
-        _database: &dyn Repository<User, SearchUser, dyn PersistenceConfig>,
+        _database: &(dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync),
         _code: String,
     ) -> Result<String, CallbackRequestError> {
-        todo!("Implement callback");
+        Err(CallbackRequestError::DoesNotSupport)
     }
 
+    #[tracing::instrument(skip(_database), level = "debug")]
     async fn register(
         &self,
-        _database: &dyn Repository<User, SearchUser, dyn PersistenceConfig>,
+        _database: &(dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync),
         _user: User,
     ) -> Result<(), RegisterRequestError> {
         todo!("Implement register");
     }
 
+    #[tracing::instrument(skip(_database), level = "debug")]
     async fn logout(
         &self,
-        _database: &dyn Repository<User, SearchUser, dyn PersistenceConfig>,
+        _database: &(dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync),
         _token: String,
     ) -> Result<(), LogoutRequestError> {
         todo!("Implement logout");
     }
 
+    #[tracing::instrument(skip(_database), level = "debug")]
     async fn validate(
         &self,
-        _database: &dyn Repository<User, SearchUser, dyn PersistenceConfig>,
+        _database: &(dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync),
         _token: String,
     ) -> Result<User, ValidateRequestError> {
         todo!("Implement validate");
     }
 
+    #[tracing::instrument(skip(_database), level = "debug")]
     async fn refresh(
         &self,
-        _database: &dyn Repository<User, SearchUser, dyn PersistenceConfig>,
+        _database: &(dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync),
         _token: String,
     ) -> Result<String, RefreshRequestError> {
         todo!("Implement refresh");

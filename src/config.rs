@@ -1,4 +1,4 @@
-use std::{env, fs::read_to_string, path::PathBuf};
+use std::{collections::HashMap, env, fs::read_to_string, path::PathBuf};
 
 use dotenvy::dotenv;
 use serde::{Deserialize, Serialize};
@@ -25,6 +25,19 @@ pub struct Config {
     pub peers: Vec<Peer>,
     pub tracing_sub: Vec<Peer>,
     pub persistence: PersistenceConfig,
+    pub auth: Vec<AuthConfig>,
+}
+
+impl Config {
+    pub fn get_app_name(&self) -> String {
+        self.hostname
+            .clone()
+            .replace("https://", "")
+            .replace("http://", "")
+            .split(":")
+            .collect::<Vec<&str>>()[0]
+            .to_string()
+    }
 }
 
 // Persistence configuration, it will be used to connect to the database
@@ -42,6 +55,21 @@ pub struct PersistenceConfig {
     pub tls_insecure: Option<bool>,
 }
 
+// Auth configuration, it will be used to connect to the authentication service
+// It can be build-in or external
+// In the case of a build-in authentication service, the kind will be build-in
+// The auth configuration should only be used in the file not the environment variables due to it's complexity
+#[derive(Deserialize, Serialize, Clone)]
+pub struct AuthConfig {
+    pub kind: String,
+    pub enabled: bool,
+    pub require_zkp: bool,
+    pub name: String,
+    pub version: String,
+    pub description: String,
+    pub extra_fields: HashMap<String, String>,
+}
+
 pub fn parse_local_config(config_file_name: String) -> Config {
     let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     println!(env!("CARGO_MANIFEST_DIR"));
@@ -51,6 +79,12 @@ pub fn parse_local_config(config_file_name: String) -> Config {
         Err(err) => println!("No .env file found: {:?}", err),
     }
     parse_config(d, config_file_name)
+}
+
+pub fn parse_test_config() -> Config {
+    let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    d.push("test_config.yaml");
+    parse_config(d, "test_config.yaml".to_string())
 }
 
 pub fn parse_config(path_buf: PathBuf, config_file_name: String) -> Config {
@@ -113,5 +147,6 @@ fn override_config_with_env_vars(config: Config) -> Config {
                 .ok()
                 .or(pers.tls_insecure),
         },
+        auth: config.auth,
     }
 }

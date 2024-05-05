@@ -12,7 +12,19 @@ tracing_sub:
     name: trace.log
     level: 1
 persistence:
-  host: "localhost"
-  user: "JosephJoestart"
+  host: "mongodb://root:root@localhost:27017"
+  user: ""
   password: ""
-  database: ""
+  database: "neonet"
+auth:
+  - kind: buildin
+    name: buildin
+    enabled: true
+    require_zkp: true
+    version: "0.1.0"
+    description: "buildin auth"
+    extra_fields:
+      refresh_token_sign: "8cc83cc8-0691-5233-854b-c76acb6096aa"
+      access_token_sign: "303722d4-45ec-564a-8446-8c051dbcaf3e"
+      refresh_token_expire: "86400"
+      access_token_expire: "3600"
