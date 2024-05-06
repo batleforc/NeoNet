@@ -3,7 +3,10 @@ use async_trait::async_trait;
 use crate::{
     config::AuthConfig,
     database::{repo::Repository, user::SearchUser, PersistenceConfig},
-    model::user::User,
+    model::{
+        role::Role,
+        user::{CreateUser, User},
+    },
 };
 
 use super::auth_handler_enum::{
@@ -61,7 +64,12 @@ where
     // The function should return whether the registration was successful or not
     // This function could be called by the callback function if the user is not found
     // ! The username should be unique and unchangeable
-    async fn register(&self, database: &R, user: User) -> Result<(), RegisterRequestError>;
+    async fn register(
+        &self,
+        database: &R,
+        user: CreateUser,
+        role: Role,
+    ) -> Result<(), RegisterRequestError>;
 
     // The logout function that will be called when the user tries to logout
     async fn logout(&self, database: &R, token: String) -> Result<(), LogoutRequestError>;

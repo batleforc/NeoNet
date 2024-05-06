@@ -18,6 +18,30 @@ impl SearchUser {
             ..Default::default()
         }
     }
+    pub fn role(role: Vec<Role>) -> Self {
+        SearchUser {
+            role: Some(role),
+            ..Default::default()
+        }
+    }
+    pub fn enabled(enabled: bool) -> Self {
+        SearchUser {
+            enabled: Some(enabled),
+            ..Default::default()
+        }
+    }
+    pub fn auth_type(auth_type: Vec<String>) -> Self {
+        SearchUser {
+            auth_type: Some(auth_type),
+            ..Default::default()
+        }
+    }
+    pub fn token(token: String) -> Self {
+        SearchUser {
+            token: Some(token),
+            ..Default::default()
+        }
+    }
 }
 
 impl SearchEntity for SearchUser {}

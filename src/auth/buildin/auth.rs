@@ -7,11 +7,17 @@ use crate::{
         },
     },
     config::AuthConfig,
-    database::{repo::Repository, user::SearchUser, PersistenceConfig},
-    model::{token_claim::TokenConfig, user::User},
+    database::{
+        self, repo::Repository, repo_error::RepoSelectError, user::SearchUser, PersistenceConfig,
+    },
+    model::{
+        role::Role,
+        token_claim::TokenConfig,
+        user::{CreateUser, User},
+    },
 };
 use async_trait::async_trait;
-use tracing::{error, info};
+use tracing::{debug, error, info};
 
 use super::{create_refresh_token::create_refresh_token, login};
 
@@ -215,13 +221,67 @@ impl AuthHandler<dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync>
         Err(CallbackRequestError::DoesNotSupport)
     }
 
-    #[tracing::instrument(skip(_database), level = "debug")]
+    #[tracing::instrument(skip(database, user), level = "debug")]
     async fn register(
         &self,
-        _database: &(dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync),
-        _user: User,
+        database: &(dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync),
+        user: CreateUser,
+        role: Role,
     ) -> Result<(), RegisterRequestError> {
-        todo!("Implement register");
+        info!("Trying to register user: {}", user.username.clone());
+        match database
+            .find_one(SearchUser::username(user.username.clone()))
+            .await
+        {
+            Ok(_) => {
+                error!("User already exists");
+                return Err(RegisterRequestError::InvalidData(
+                    "User already exists".to_string(),
+                ));
+            }
+            Err(err) => {
+                if err != RepoSelectError::NoRowFound {
+                    error!("Error finding user: {}", err.to_string());
+                    return Err(RegisterRequestError::Unknown(
+                        "Error finding user".to_string(),
+                    ));
+                }
+                debug!("User not found, proceeding with registration");
+            }
+        };
+        let mut user = User::new(
+            "".to_string(),
+            role,
+            true,
+            user.username.clone(),
+            "".to_string(),
+            None,
+            None,
+            None,
+            Some(self.get_name()),
+            chrono::Utc::now(),
+            chrono::Utc::now(),
+            vec![],
+        );
+        user.set_password(user.password.clone());
+
+        match database.create(user.clone()).await {
+            Ok(_) => {
+                info!("User registered: {}", user.username.clone());
+                Ok(())
+            }
+            Err(err) => {
+                error!("Error registering user: {}", err.to_string());
+                match err {
+                    database::repo_error::RepoCreateError::InvalidData(err) => {
+                        Err(RegisterRequestError::InvalidData(err))
+                    }
+                    database::repo_error::RepoCreateError::Unknown(_) => Err(
+                        RegisterRequestError::Unknown("Error registering user".to_string()),
+                    ),
+                }
+            }
+        }
     }
 
     #[tracing::instrument(skip(_database), level = "debug")]

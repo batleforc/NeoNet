@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum RepoInitError {
     InvalidParam(String),
     Unknown(String),
@@ -15,7 +15,7 @@ impl Display for RepoInitError {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum RepoCreateError {
     InvalidData(String),
     Unknown(String),
@@ -30,7 +30,7 @@ impl Display for RepoCreateError {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum RepoSelectError {
     SelectParamInvalid(String),
     NoRowFound,
@@ -47,7 +47,7 @@ impl Display for RepoSelectError {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum RepoFindAllError {
     NotFound,
     Unknown(String),
@@ -62,7 +62,7 @@ impl Display for RepoFindAllError {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum RepoUpdateError {
     NotFound,
     Unknown(String),
@@ -77,7 +77,7 @@ impl Display for RepoUpdateError {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum RepoDeleteError {
     NotFound,
     InvalidData(String),

@@ -6,6 +6,12 @@ use crate::database::Entity;
 use super::role::Role;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateUser {
+    pub username: String,
+    pub password: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct User {
     pub id: String,
     pub role: Role,
@@ -54,10 +60,10 @@ impl User {
             token,
         }
     }
-    pub fn set_password(&mut self, password: &str) {
+    pub fn set_password(&mut self, password: String) {
         self.password = bcrypt::hash(password, bcrypt::DEFAULT_COST).unwrap();
     }
-    pub fn check_password(&self, password: &str) -> bool {
+    pub fn check_password(&self, password: String) -> bool {
         bcrypt::verify(password, &self.password).unwrap_or(false)
     }
 }

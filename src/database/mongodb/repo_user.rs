@@ -34,7 +34,11 @@ impl Repository<User, SearchUser, MongoDbConfig> for UserMongoRepo {
         let collection = UserMongo::get_collection(self.db.clone());
         let user_mongo = UserMongo::from(entity.clone());
         match collection.insert_one(user_mongo, None).await {
-            Ok(_) => Ok(entity),
+            Ok(test) => {
+                let mut entity = entity;
+                entity.id = test.inserted_id.as_object_id().unwrap().to_hex();
+                Ok(entity)
+            }
             Err(e) => Err(crate::database::repo_error::RepoCreateError::Unknown(
                 e.to_string(),
             )),

@@ -38,7 +38,7 @@ pub async fn login_handler(
             ));
         }
     }
-    if user.check_password(&password) {
+    if user.check_password(password) {
         tracing::info!("User logged in successfully");
         Ok(user)
     } else {
