@@ -298,7 +298,10 @@ impl AuthHandler<dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync>
         &self,
         _database: &(dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync),
         _token: String,
+        _refresh: bool,
     ) -> Result<User, ValidateRequestError> {
+        // Check if the token is valid
+        // If refresh is true, check if the token is a refresh token then verify in the database
         todo!("Implement validate");
     }
 

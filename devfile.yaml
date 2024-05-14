@@ -13,7 +13,7 @@ projects:
 components:
   - name: tools
     container:
-      image: harbor.weebo.fr/batleforc/che-rust:latest
+      image: harbor.weebo.fr/batleforc/che-rust-podman:latest
       memoryLimit: 8Gi
       mountSources: true
       endpoints:
@@ -23,6 +23,8 @@ components:
           protocol: https
           secure: true
       env:
+        - name: KUBEDOCK_ENABLED
+          value: "true"
         - name: RUST_ENV
           value: "dev-che"
         - name: "PORT"

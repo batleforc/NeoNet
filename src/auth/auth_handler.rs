@@ -76,7 +76,12 @@ where
 
     // The validate function that will be called every time the user tries to access a protected route
     // The function should return the user information if the token is valid
-    async fn validate(&self, database: &R, token: String) -> Result<User, ValidateRequestError>;
+    async fn validate(
+        &self,
+        database: &R,
+        token: String,
+        refresh: bool,
+    ) -> Result<User, ValidateRequestError>;
 
     // The refresh function that will be called when the user tries to refresh the token
     // The function should return a new access token if the refresh is successful
