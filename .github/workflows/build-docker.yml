@@ -22,12 +22,16 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Extract branch name
         shell: bash
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}\nrepository=${GITHUB_REPOSITORY@L}" >> $GITHUB_OUTPUT
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}repository=${GITHUB_REPOSITORY@L}" >> $GITHUB_OUTPUT
         id: extract_branch
+      - name: Extract branch name
+        shell: bash
+        run: echo "repository=${GITHUB_REPOSITORY@L}" >> $GITHUB_OUTPUT
+        id: extract_repo
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ steps.lower-repo.outputs.repository }}:${{ steps.extract_branch.outputs.branch }}
+            ghcr.io/${{ steps.extract_repo.outputs.repository }}:${{ steps.extract_branch.outputs.branch }}
