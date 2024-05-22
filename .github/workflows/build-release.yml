@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: taiki-e/upload-rust-binary-action@v1
         with:
-          bin: dev-cli
+          bin: server, client, cli, swag_gen
           tar: unix
           zip: windows
           archive: $bin-$tag-$target

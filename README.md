@@ -40,7 +40,9 @@ Doing it with the cli will:
 - Increment the past version depending on the choice made (path/minor/major)
 - Change the version in Cargo.toml
 - Generate the changelog
-- Trigger the pipeline that will create a draft with possible package
+- Trigger the pipeline that will create a draft
+- Push binaries to the draft
+- Build docker image
 
 #### If you want to undraft the release
 
