@@ -49,11 +49,15 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract repo name
+        shell: bash
+        run: echo "repository=${GITHUB_REPOSITORY@L}" >> $GITHUB_OUTPUT
+        id: extract_repo
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository@L }}:latest
-            ghcr.io/${{ github.repository@L }}:${{ github.ref_name }}
+            ghcr.io/${{ steps.extract_repo.outputs.repository }}:latest
+            ghcr.io/${{ steps.extract_repo.outputs.repository }}:${{ github.ref_name }}
