@@ -1,5 +1,8 @@
 # NeoNet
 
+## Left TO DO before merge
+
+- Auth module
 
 ## Contributing
 

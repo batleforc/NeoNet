@@ -4,21 +4,15 @@ use super::{
     repo_error::{
         RepoCreateError, RepoDeleteError, RepoFindAllError, RepoSelectError, RepoUpdateError,
     },
-    Entity, PersistenceConfig, SearchEntity,
+    Entity, SearchEntity,
 };
 
 #[async_trait]
-pub trait Repository<T, A, P>
+pub trait Repository<T, A>
 where
     T: Entity,
     A: SearchEntity + ?Sized,
-    P: PersistenceConfig + ?Sized,
 {
-    /// A function responsible for the creation of the Repository
-    fn new(config: &P) -> Result<Self, String>
-    where
-        Self: Sized;
-
     async fn init(&self) -> Result<(), String>;
 
     /// Insert the received entity in the persistence system

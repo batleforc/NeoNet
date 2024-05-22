@@ -2,7 +2,7 @@ use async_trait::async_trait;
 
 use crate::{
     config::AuthConfig,
-    database::{repo::Repository, user::SearchUser, PersistenceConfig},
+    database::{repo::Repository, user::SearchUser},
     model::{
         role::Role,
         user::{CreateUser, User},
@@ -17,7 +17,7 @@ use super::auth_handler_enum::{
 #[async_trait]
 pub trait AuthHandler<R>
 where
-    R: Repository<User, SearchUser, dyn PersistenceConfig> + ?Sized + Sync,
+    R: Repository<User, SearchUser> + ?Sized + Sync,
 {
     // The name of the authentication handler
     fn get_name(&self) -> String;

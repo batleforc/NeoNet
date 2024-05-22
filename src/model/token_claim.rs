@@ -68,18 +68,18 @@ impl std::fmt::Display for TokenError {
 
 #[derive(Debug, Serialize, Deserialize, ToSchema, Clone, PartialEq)]
 pub struct TokenClaims {
-    pub sub: String,   // subject
-    pub email: String, // email
-    pub exp: usize,    // expiration
-    pub iat: usize,    // issued at
-    pub iss: String,   // issuer
-    pub refresh: bool, // is refresh token
+    pub sub: String,      // subject
+    pub username: String, // email
+    pub exp: usize,       // expiration
+    pub iat: usize,       // issued at
+    pub iss: String,      // issuer
+    pub refresh: bool,    // is refresh token
 }
 
 impl TokenClaims {
     pub fn new(
         sub: String,
-        email: String,
+        username: String,
         iss: String,
         refresh: bool,
         config: TokenConfig,
@@ -88,7 +88,7 @@ impl TokenClaims {
         let exp = iat + chrono::Duration::seconds(config.get_exp(refresh) as i64);
         Self {
             sub,
-            email,
+            username,
             exp: exp.timestamp() as usize,
             iat: iat.timestamp() as usize,
             iss,
@@ -163,12 +163,12 @@ mod tests {
 
     fn init_default_token_claims(
         sub: String,
-        email: String,
+        username: String,
         iss: String,
         refresh: bool,
         config: TokenConfig,
     ) -> (TokenClaims, usize, usize) {
-        let token = TokenClaims::new(sub, email, iss, refresh, config);
+        let token = TokenClaims::new(sub, username, iss, refresh, config);
         (token.clone(), token.iat, token.exp)
     }
 
@@ -212,7 +212,7 @@ mod tests {
                     }
                 };
             assert_eq!(token_claims.sub, sub);
-            assert_eq!(token_claims.email, email);
+            assert_eq!(token_claims.username, email);
             assert_eq!(token_claims.iss, iss);
             assert_eq!(token_claims.refresh, *refresh);
             match *refresh {

@@ -1,12 +1,12 @@
 use crate::{
     auth::auth_handler_enum::LoginRequestError,
-    database::{repo::Repository, user::SearchUser, PersistenceConfig},
+    database::{repo::Repository, user::SearchUser},
     model::user::User,
 };
 
 #[tracing::instrument(skip(database, password), level = "debug")]
 pub async fn login_handler(
-    database: &(dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync),
+    database: &(dyn Repository<User, SearchUser> + Sync),
     username: String,
     password: String,
     auth_type: String,

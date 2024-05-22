@@ -64,6 +64,12 @@ impl User {
         self.password = bcrypt::hash(password, bcrypt::DEFAULT_COST).unwrap();
     }
     pub fn check_password(&self, password: String) -> bool {
-        bcrypt::verify(password, &self.password).unwrap_or(false)
+        match bcrypt::verify(password, &self.password) {
+            Ok(res) => res,
+            Err(err) => {
+                println!("Error while checking password: {:?}", err);
+                false
+            }
+        }
     }
 }

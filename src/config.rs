@@ -3,7 +3,7 @@ use std::{collections::HashMap, env, fs::read_to_string, path::PathBuf};
 use dotenvy::dotenv;
 use serde::{Deserialize, Serialize};
 
-use crate::peers::peers_kind::Peer;
+use crate::{peers::peers_kind::Peer, tracing::tracing_kind::Tracing};
 
 const PORT: &str = "PORT";
 const HOST_NAME: &str = "HOST_NAME";
@@ -23,7 +23,7 @@ pub struct Config {
     pub hostname: String,
     pub env: String,
     pub peers: Vec<Peer>,
-    pub tracing_sub: Vec<Peer>,
+    pub tracing_sub: Vec<Tracing>,
     pub persistence: PersistenceConfig,
     pub auth: Vec<AuthConfig>,
 }
@@ -83,7 +83,7 @@ pub fn parse_local_config(config_file_name: String) -> Config {
 
 pub fn parse_test_config() -> Config {
     let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    d.push("test_config.yaml");
+    d.push("resource/test_config.yaml");
     parse_config(d, "test_config.yaml".to_string())
 }
 
@@ -94,6 +94,7 @@ pub fn parse_config(path_buf: PathBuf, config_file_name: String) -> Config {
 
 fn parse_config_from_file(path_buf: PathBuf, config_file_name: String) -> Config {
     let config_file = path_buf.into_os_string().into_string().unwrap();
+    println!("Reading config file: {}", config_file);
     let binding = read_to_string(config_file).unwrap();
     let config_content = binding.as_str();
     match config_file_name.split('.').last() {

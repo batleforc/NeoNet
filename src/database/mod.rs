@@ -5,4 +5,3 @@ pub mod user;
 
 pub trait SearchEntity {}
 pub trait Entity {}
-pub trait PersistenceConfig {}

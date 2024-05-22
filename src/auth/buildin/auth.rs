@@ -7,19 +7,20 @@ use crate::{
         },
     },
     config::AuthConfig,
-    database::{
-        self, repo::Repository, repo_error::RepoSelectError, user::SearchUser, PersistenceConfig,
-    },
+    database::{self, repo::Repository, repo_error::RepoSelectError, user::SearchUser},
     model::{
         role::Role,
-        token_claim::TokenConfig,
+        token_claim::{TokenClaims, TokenConfig},
         user::{CreateUser, User},
     },
 };
 use async_trait::async_trait;
 use tracing::{debug, error, info};
 
-use super::{create_refresh_token::create_refresh_token, login};
+use super::{
+    create_refresh_token::create_refresh_token, login, logout,
+    validate_refresh_token::validate_refresh_token_handler,
+};
 
 // The authentication handler that uses a build-in user database
 // The handler will use the User model to store the user information
@@ -35,9 +36,7 @@ pub struct BuildInAuthHandler {
 }
 
 #[async_trait]
-impl AuthHandler<dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync>
-    for BuildInAuthHandler
-{
+impl AuthHandler<dyn Repository<User, SearchUser> + Sync> for BuildInAuthHandler {
     fn get_name(&self) -> String {
         "buildin".to_string()
     }
@@ -55,7 +54,7 @@ impl AuthHandler<dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync>
     }
 
     fn get_kind(&self) -> String {
-        "build-in".to_string()
+        "buildin".to_string()
     }
 
     #[tracing::instrument(level = "debug", skip(config))]
@@ -174,7 +173,7 @@ impl AuthHandler<dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync>
     #[tracing::instrument(skip(database, password), level = "debug")]
     async fn login(
         &self,
-        database: &(dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync),
+        database: &(dyn Repository<User, SearchUser> + Sync),
         username: String,
         password: String,
     ) -> Result<LoginRequestRetun, LoginRequestError> {
@@ -215,7 +214,7 @@ impl AuthHandler<dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync>
     #[tracing::instrument(skip(_database), level = "debug")]
     async fn callback(
         &self,
-        _database: &(dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync),
+        _database: &(dyn Repository<User, SearchUser> + Sync),
         _code: String,
     ) -> Result<String, CallbackRequestError> {
         Err(CallbackRequestError::DoesNotSupport)
@@ -224,7 +223,7 @@ impl AuthHandler<dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync>
     #[tracing::instrument(skip(database, user), level = "debug")]
     async fn register(
         &self,
-        database: &(dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync),
+        database: &(dyn Repository<User, SearchUser> + Sync),
         user: CreateUser,
         role: Role,
     ) -> Result<(), RegisterRequestError> {
@@ -249,7 +248,7 @@ impl AuthHandler<dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync>
                 debug!("User not found, proceeding with registration");
             }
         };
-        let mut user = User::new(
+        let mut newuser = User::new(
             "".to_string(),
             role,
             true,
@@ -263,11 +262,11 @@ impl AuthHandler<dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync>
             chrono::Utc::now(),
             vec![],
         );
-        user.set_password(user.password.clone());
+        newuser.set_password(user.password.clone());
 
-        match database.create(user.clone()).await {
+        match database.create(newuser.clone()).await {
             Ok(_) => {
-                info!("User registered: {}", user.username.clone());
+                info!("User registered: {}", newuser.username.clone());
                 Ok(())
             }
             Err(err) => {
@@ -284,33 +283,179 @@ impl AuthHandler<dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync>
         }
     }
 
-    #[tracing::instrument(skip(_database), level = "debug")]
+    #[tracing::instrument(skip(database), level = "debug")]
     async fn logout(
         &self,
-        _database: &(dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync),
-        _token: String,
+        database: &(dyn Repository<User, SearchUser> + Sync),
+        token: String,
     ) -> Result<(), LogoutRequestError> {
-        todo!("Implement logout");
+        info!("Checking if the token exists in the database");
+        match logout::logout_handler(
+            database,
+            token,
+            self.app_name.clone(),
+            self.token_config.clone(),
+        )
+        .await
+        {
+            Ok(_) => {
+                info!("User logged out successfully");
+                return Ok(());
+            }
+            Err(err) => {
+                error!("Error logging out user: {:?}", err);
+                return Err(err);
+            }
+        }
     }
 
-    #[tracing::instrument(skip(_database), level = "debug")]
+    #[tracing::instrument(skip(database), level = "debug")]
     async fn validate(
         &self,
-        _database: &(dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync),
-        _token: String,
-        _refresh: bool,
+        database: &(dyn Repository<User, SearchUser> + Sync),
+        token: String,
+        refresh: bool,
     ) -> Result<User, ValidateRequestError> {
-        // Check if the token is valid
-        // If refresh is true, check if the token is a refresh token then verify in the database
-        todo!("Implement validate");
+        let claim =
+            match TokenClaims::validate_token(token.clone(), refresh, self.token_config.clone()) {
+                Ok(claim) => {
+                    info!("Token validated");
+                    claim
+                }
+                Err(err) => {
+                    error!("Error validating token: {:?}", err);
+                    return Err(ValidateRequestError::InvalidData(
+                        "Error validating token".to_string(),
+                    ));
+                }
+            };
+        match validate_refresh_token_handler(database, token, self.app_name.clone(), refresh, claim)
+            .await
+        {
+            Ok(user) => {
+                info!(
+                    "Token validated, user returned: {:?}",
+                    user.username.clone()
+                );
+                Ok(user)
+            }
+            Err(err) => {
+                error!("Error validating token: {:?}", err);
+                return Err(ValidateRequestError::InvalidData(
+                    "Error validating token".to_string(),
+                ));
+            }
+        }
     }
 
     #[tracing::instrument(skip(_database), level = "debug")]
     async fn refresh(
         &self,
-        _database: &(dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync),
-        _token: String,
+        _database: &(dyn Repository<User, SearchUser> + Sync),
+        token: String,
     ) -> Result<String, RefreshRequestError> {
-        todo!("Implement refresh");
+        let mut claim =
+            match TokenClaims::validate_token(token.clone(), true, self.token_config.clone()) {
+                Ok(claim) => {
+                    info!("Token validated");
+                    claim
+                }
+                Err(err) => {
+                    error!("Error validating token: {:?}", err);
+                    return Err(RefreshRequestError::InvalidData(
+                        "Error validating token".to_string(),
+                    ));
+                }
+            };
+        claim = claim.to_access_token(self.token_config.clone());
+        let token = match claim.sign_token(self.token_config.clone()) {
+            Ok(token) => token,
+            Err(e) => return Err(RefreshRequestError::Unknown(e.to_string())),
+        };
+        Ok(token)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use serial_test::serial;
+
+    use crate::{
+        auth::{auth_handler::AuthHandler, buildin::auth::BuildInAuthHandler},
+        config::parse_test_config,
+        database::{
+            mongodb::{config::MongoDbConfig, repo_user},
+            repo::Repository,
+            user::SearchUser,
+        },
+        model::{role::Role, user::CreateUser},
+    };
+
+    #[tokio::test]
+    #[serial]
+    async fn test_auth_basic_flow() {
+        let config = parse_test_config();
+        let mut mongo_db_config = MongoDbConfig::new(
+            config.persistence.host.clone(),
+            config.persistence.database.clone(),
+        );
+        mongo_db_config.init_db().await.unwrap();
+        let repo_user = repo_user::UserMongoRepo::new(&mongo_db_config).unwrap();
+        repo_user.delete_many(SearchUser::default()).await.unwrap();
+        let mut auth = BuildInAuthHandler {
+            require_zkp: false,
+            token_config: Default::default(),
+            description: "Test".to_string(),
+            app_name: "Test".to_string(),
+        };
+        auth.init_config(config.auth[0].clone(), config.clone().get_app_name())
+            .await
+            .unwrap();
+        let user = CreateUser {
+            username: "test_auth_basic_flow".to_string(),
+            password: "test".to_string(),
+        };
+        auth.register(&repo_user, user.clone(), Role::User)
+            .await
+            .unwrap();
+        assert!(auth
+            .login(&repo_user, user.username.clone(), "test2".to_string())
+            .await
+            .is_err());
+        let token = auth
+            .login(&repo_user, user.username, user.password)
+            .await
+            .unwrap();
+        let refresh_token = match token {
+            crate::auth::auth_handler_enum::LoginRequestRetun::JWT(token) => {
+                let user = auth
+                    .validate(&repo_user, token.clone(), true)
+                    .await
+                    .unwrap();
+                assert_eq!(user.username, "test_auth_basic_flow");
+                token
+            }
+            _ => panic!("Invalid token"),
+        };
+        let access_token = auth
+            .refresh(&repo_user, refresh_token.clone())
+            .await
+            .unwrap();
+        let user = auth
+            .validate(&repo_user, access_token.clone(), false)
+            .await
+            .unwrap();
+        assert_eq!(user.username, "test_auth_basic_flow");
+        auth.logout(&repo_user, refresh_token.clone())
+            .await
+            .unwrap();
+        assert!(auth
+            .validate(&repo_user, refresh_token.clone(), true)
+            .await
+            .is_err());
+        repo_user
+            .delete_many(SearchUser::username("test_auth_basic_flow".to_string()))
+            .await
+            .unwrap();
     }
 }

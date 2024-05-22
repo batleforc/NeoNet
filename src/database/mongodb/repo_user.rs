@@ -11,9 +11,8 @@ pub struct UserMongoRepo {
     pub db: mongodb::Database,
 }
 
-#[async_trait]
-impl Repository<User, SearchUser, MongoDbConfig> for UserMongoRepo {
-    fn new(config: &MongoDbConfig) -> Result<Self, String> {
+impl UserMongoRepo {
+    pub fn new(config: &MongoDbConfig) -> Result<Self, String> {
         match &config.client {
             Some(client) => Ok(Self {
                 db: client.database(&config.db_name),
@@ -21,6 +20,10 @@ impl Repository<User, SearchUser, MongoDbConfig> for UserMongoRepo {
             None => Err("Client not initialized".to_string()),
         }
     }
+}
+
+#[async_trait]
+impl Repository<User, SearchUser> for UserMongoRepo {
     #[tracing::instrument(level = "debug")]
     async fn init(&self) -> Result<(), String> {
         Ok(())
@@ -52,7 +55,6 @@ impl Repository<User, SearchUser, MongoDbConfig> for UserMongoRepo {
     ) -> Result<User, crate::database::repo_error::RepoSelectError> {
         let collection = UserMongo::get_collection(self.db.clone());
         let search_doc = search.turn_into_search();
-        println!("{:?}", search_doc);
         match collection.find_one(search_doc, None).await {
             Ok(Some(doc)) => match doc.try_into() {
                 Ok(user) => Ok(user),

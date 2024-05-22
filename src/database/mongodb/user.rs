@@ -70,7 +70,7 @@ impl UserMongo {
 impl From<User> for UserMongo {
     fn from(user: User) -> Self {
         UserMongo {
-            _id: ObjectId::from_str(user.id.as_str()).unwrap(),
+            _id: ObjectId::from_str(user.id.as_str()).unwrap_or_else(|_| ObjectId::new()),
             role: user.role,
             enabled: user.enabled,
             username: user.username,

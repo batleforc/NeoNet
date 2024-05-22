@@ -16,7 +16,7 @@ use super::apidocs::ApiDoc;
 pub async fn run_server() -> Option<Server> {
     let mut openapi = ApiDoc::openapi();
     openapi.info.version = env!("CARGO_PKG_VERSION").to_string();
-    let config = parse_local_config("config.toml".to_string());
+    let config = parse_local_config("resource/config.toml".to_string());
     let mongo_db_config = MongoDbConfig::new(config.persistence.host, config.persistence.database);
     let repo_user = repo_user::UserMongoRepo::new(&mongo_db_config).unwrap();
     repo_user.init().await.unwrap();

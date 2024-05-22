@@ -1,6 +1,6 @@
 use mongodb::bson::doc;
 
-use crate::database::{repo_error::RepoInitError, PersistenceConfig};
+use crate::database::repo_error::RepoInitError;
 
 #[derive(Debug, Clone)]
 pub struct MongoDbConfig {
@@ -8,8 +8,6 @@ pub struct MongoDbConfig {
     pub db_name: String,
     pub client: Option<mongodb::Client>,
 }
-
-impl PersistenceConfig for MongoDbConfig {}
 
 impl MongoDbConfig {
     pub fn new(uri: String, db_name: String) -> Self {

@@ -1,8 +1,9 @@
-use serde::{Deserialize, Serialize};
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::fmt::Debug;
 use tracing::Level;
 
-#[derive(Serialize, Deserialize, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Serialize_repr, Deserialize_repr, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[repr(u8)]
 pub enum VerboseLevel {
     ERROR = 4,
     WARN = 3,

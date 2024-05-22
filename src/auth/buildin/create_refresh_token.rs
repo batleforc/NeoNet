@@ -1,5 +1,5 @@
 use crate::{
-    database::{repo::Repository, user::SearchUser, PersistenceConfig},
+    database::{repo::Repository, user::SearchUser},
     model::{
         token_claim::{TokenClaims, TokenConfig, TokenError},
         user::User,
@@ -22,7 +22,7 @@ impl Display for CreateRefreshTokenError {
 
 #[tracing::instrument(skip(database), level = "debug")]
 pub async fn create_refresh_token(
-    database: &(dyn Repository<User, SearchUser, dyn PersistenceConfig> + Sync),
+    database: &(dyn Repository<User, SearchUser> + Sync),
     user: &mut User,
     token_config: TokenConfig,
     app_name: String,
