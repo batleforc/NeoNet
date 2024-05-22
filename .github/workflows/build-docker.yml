@@ -9,7 +9,6 @@ on:
 
 jobs:
   build-image:
-    needs: create-release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
