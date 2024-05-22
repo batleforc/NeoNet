@@ -4,7 +4,12 @@ WORKDIR /app
 
 # Copy the Cargo.toml and build the project to cache dependencies
 COPY Cargo.toml .
-RUN mkdir src && echo "fn main() {}" > src/main.rs
+RUN mkdir src &&\
+    echo "fn main() {}" > src/main.rs && mkdir src/bin &&\
+    echo "fn main() {}" > src/bin/sandbox.rs &&\
+    echo "fn main() {}" > src/bin/client.rs &&\
+    echo "fn main() {}" > src/bin/swag_gen.rs &&\
+    echo "fn main() {}" > src/bin/cli.rs
 RUN cargo build --release
 
 # Copy the rest of the source code then build the project
