@@ -9,7 +9,7 @@ pub async fn login_handler(
     database: &(dyn Repository<User, SearchUser> + Sync),
     username: String,
     password: String,
-    auth_type: String,
+    target_auth_type: String,
 ) -> Result<User, LoginRequestError> {
     let user = match database.find_one(SearchUser::username(username)).await {
         Ok(user) => {
@@ -25,7 +25,7 @@ pub async fn login_handler(
     };
     match user.clone().auth_type {
         Some(auth_type) => {
-            if auth_type != auth_type {
+            if auth_type != target_auth_type {
                 return Err(LoginRequestError::Unauthorized(
                     "Please use the auth method that you used to register".to_string(),
                 ));

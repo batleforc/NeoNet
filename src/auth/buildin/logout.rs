@@ -11,7 +11,7 @@ use crate::{
 pub async fn logout_handler(
     database: &(dyn Repository<User, SearchUser> + Sync),
     token: String,
-    auth_type: String,
+    target_auth_type: String,
     config: TokenConfig,
 ) -> Result<(), LogoutRequestError> {
     let mut user = match database.find_one(SearchUser::token(token.clone())).await {
@@ -28,7 +28,7 @@ pub async fn logout_handler(
     };
     match user.clone().auth_type {
         Some(auth_type) => {
-            if auth_type != auth_type {
+            if auth_type != target_auth_type {
                 return Err(LogoutRequestError::InvalidData(
                     "Please use the auth method that you used to register".to_string(),
                 ));
@@ -44,13 +44,10 @@ pub async fn logout_handler(
 
     // Delete token
     user.token.retain(|t| {
-        if t == &token || t == "" {
+        if t == &token || t.is_empty() {
             return false;
         }
-        match TokenClaims::validate_token(t.clone(), true, config.clone()) {
-            Ok(_) => true,
-            Err(_) => false,
-        }
+        TokenClaims::validate_token(t.clone(), true, config.clone()).is_ok()
     });
     match database.update(user).await {
         Ok(_) => {

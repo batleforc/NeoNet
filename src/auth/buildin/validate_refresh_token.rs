@@ -8,7 +8,7 @@ use crate::{
 pub async fn validate_refresh_token_handler(
     database: &(dyn Repository<User, SearchUser> + Sync),
     token: String,
-    auth_type: String,
+    target_auth_type: String,
     refresh: bool,
     claim: TokenClaims,
 ) -> Result<User, ValidateRequestError> {
@@ -29,7 +29,7 @@ pub async fn validate_refresh_token_handler(
     };
     match user.clone().auth_type {
         Some(auth_type) => {
-            if auth_type != auth_type {
+            if auth_type != target_auth_type {
                 return Err(ValidateRequestError::InvalidData(
                     "Please use the auth method that you used to register".to_string(),
                 ));

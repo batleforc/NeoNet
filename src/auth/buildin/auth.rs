@@ -76,7 +76,7 @@ impl AuthHandler<dyn Repository<User, SearchUser> + Sync> for BuildInAuthHandler
                 "The authentication handler kind is not build-in".to_string(),
             ));
         }
-        if config.version != "" && config.version != self.get_version() {
+        if !config.version.is_empty() && config.version != self.get_version() {
             error!("The authentication handler version does not match");
             return Err(ConfigValidateError::InvalidData(
                 "The authentication handler version does not match".to_string(),
@@ -164,7 +164,7 @@ impl AuthHandler<dyn Repository<User, SearchUser> + Sync> for BuildInAuthHandler
         self.token_config = token_config;
         // The name of the authentication handler will not be checked
         self.require_zkp = config.require_zkp;
-        self.description = config.description.clone();
+        self.description = config.description;
         self.app_name = app_name;
 
         Ok(())

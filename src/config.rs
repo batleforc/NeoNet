@@ -34,7 +34,7 @@ impl Config {
             .clone()
             .replace("https://", "")
             .replace("http://", "")
-            .split(":")
+            .split(':')
             .collect::<Vec<&str>>()[0]
             .to_string()
     }

@@ -2,23 +2,12 @@ use jsonwebtoken::{encode, Algorithm, DecodingKey, EncodingKey, Header, Validati
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct TokenConfig {
     pub refresh_token_sign: String,
     pub access_token_sign: String,
     pub refresh_token_exp: usize,
     pub access_token_exp: usize,
-}
-
-impl Default for TokenConfig {
-    fn default() -> Self {
-        Self {
-            refresh_token_sign: Default::default(),
-            access_token_sign: Default::default(),
-            refresh_token_exp: Default::default(),
-            access_token_exp: Default::default(),
-        }
-    }
 }
 
 impl TokenConfig {

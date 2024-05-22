@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, PartialEq, Deserialize, Serialize, Clone, Copy)]
@@ -8,13 +10,13 @@ pub enum Role {
     User,
 }
 
-impl ToString for Role {
-    fn to_string(&self) -> String {
+impl Display for Role {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Role::Owner => "Owner".to_string(),
-            Role::Admin => "Admin".to_string(),
-            Role::Moderator => "Moderator".to_string(),
-            Role::User => "User".to_string(),
+            Role::Owner => write!(f, "Owner"),
+            Role::Admin => write!(f, "Admin"),
+            Role::Moderator => write!(f, "Moderator"),
+            Role::User => write!(f, "User"),
         }
     }
 }
