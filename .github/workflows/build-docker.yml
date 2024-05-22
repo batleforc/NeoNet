@@ -1,4 +1,4 @@
-name: rust-clippy analyze
+name: Build docker image
 
 on:
   push:
@@ -30,4 +30,4 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:${{ steps.extract_branch.outputs.branch }}
+            ghcr.io/${{ github.repository@U }}:${{ steps.extract_branch.outputs.branch }}
